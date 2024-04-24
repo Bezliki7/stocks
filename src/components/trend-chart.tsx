@@ -11,7 +11,7 @@ const TrendOptions = {
   series: [{ color: '#6a00ff' }],
 };
 
-const TrendChart = ({ data }: { data: any[] }) => {
+export const TrendChart = ({ data }: { data: any[] }) => {
   if (data.length > 1) {
     return (
       <div>
@@ -31,5 +31,3 @@ const TrendChart = ({ data }: { data: any[] }) => {
     );
   }
 };
-
-export default TrendChart;

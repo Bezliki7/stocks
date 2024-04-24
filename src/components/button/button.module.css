@@ -1,0 +1,13 @@
+.default{
+    color: #ccc;
+    background-color: #2a0094;
+    border: none;
+    border-radius: 5px;
+}
+
+.ghost {
+    color: #000000;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 5px;
+}

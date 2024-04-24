@@ -24,7 +24,8 @@ export class Store {
   }
 
   public getMoexIndexesByPeriod = flow(function* (this: Store) {
-    const url = 'https://serevr-stocks.onrender.com/main';
+    // const url = 'https://serevr-stocks.onrender.com/main';
+    const url = 'http://localhost:3000/main';
 
     const res = yield axios.put(url, {
       startDate: this.startDate,

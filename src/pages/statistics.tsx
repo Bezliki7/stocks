@@ -1,11 +1,10 @@
 // @ts-ignore
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Button, DatePicker } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { LineChart } from '@mui/x-charts';
 import dayjs from 'dayjs';
-import TrendChart from '../components/trend-chart';
 
+import { Button, DatePicker, TrendChart } from '../components';
 import useStore from '../hooks/use-store';
 import { determineTrendType } from '../utils/trend';
 import { ChartsContainer, Container, HeaderContainer } from './styled.css';
@@ -45,8 +44,8 @@ const Statistics = () => {
           style={{ height: 32 }}
         />
         <Button
+          variant="default"
           title="получить данные"
-          type="default"
           onClick={onCLick}
           children={'получить данные'}
         />
