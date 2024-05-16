@@ -3,10 +3,10 @@ import { observer } from "mobx-react-lite";
 import { LineChart } from "@mui/x-charts";
 import dayjs from "dayjs";
 
-import { Button, DatePicker, TrendChart } from "../components";
-import useStore from "../hooks/use-store";
-import { determineTrendType } from "../utils/trend";
-import { ChartsContainer, Container, HeaderContainer } from "./styled.css";
+import { Button, TrendChart, DatePicker } from "../../components/ui";
+import useStore from "../../hooks/use-store";
+import { determineTrendType } from "../../utils/trend";
+import { ChartsContainer, Container, HeaderContainer } from "./stocks.css";
 
 const Statistics = () => {
   const { store } = useStore();
