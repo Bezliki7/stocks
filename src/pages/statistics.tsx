@@ -1,19 +1,18 @@
-// @ts-ignore
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { observer } from 'mobx-react-lite';
-import { LineChart } from '@mui/x-charts';
-import dayjs from 'dayjs';
+import React, { useState } from "react";
+import { observer } from "mobx-react-lite";
+import { LineChart } from "@mui/x-charts";
+import dayjs from "dayjs";
 
-import { Button, DatePicker, TrendChart } from '../components';
-import useStore from '../hooks/use-store';
-import { determineTrendType } from '../utils/trend';
-import { ChartsContainer, Container, HeaderContainer } from './styled.css';
+import { Button, DatePicker, TrendChart } from "../components";
+import useStore from "../hooks/use-store";
+import { determineTrendType } from "../utils/trend";
+import { ChartsContainer, Container, HeaderContainer } from "./styled.css";
 
 const Statistics = () => {
   const { store } = useStore();
   const [isFetched, setFetched] = useState(false);
 
-  const onChange = (type: 'startDate' | 'endDate', value: string) => {
+  const onChange = (type: "startDate" | "endDate", value: string) => {
     store.setProperties({ [type]: value });
   };
 
@@ -21,7 +20,7 @@ const Statistics = () => {
     await store.getMoexIndexesByPeriod();
     setFetched(true);
   };
-  const arr: any = [['Index', 'Date']];
+  const arr: any = [["Index", "Date"]];
 
   const indexes = store.statics.map((el) => +el.index);
   const dates = store.statics.map((el, i) => {
@@ -36,18 +35,18 @@ const Statistics = () => {
     <Container>
       <HeaderContainer>
         <DatePicker
-          onChange={(value) => onChange('startDate', value.toISOString())}
+          onChange={(value) => onChange("startDate", value.toISOString())}
           style={{ height: 32 }}
         />
         <DatePicker
-          onChange={(value) => onChange('endDate', value.toISOString())}
+          onChange={(value) => onChange("endDate", value.toISOString())}
           style={{ height: 32 }}
         />
         <Button
           variant="default"
           title="получить данные"
           onClick={onCLick}
-          children={'получить данные'}
+          children={"получить данные"}
         />
 
         {store.statics.length ? type : null}
@@ -61,8 +60,8 @@ const Statistics = () => {
             xAxis={[
               {
                 data: dates,
-                scaleType: 'time',
-                valueFormatter: (date) => dayjs(date).format('DD.MM.YYYY'),
+                scaleType: "time",
+                valueFormatter: (date) => dayjs(date).format("DD.MM.YYYY"),
               },
             ]}
             series={[
@@ -75,7 +74,7 @@ const Statistics = () => {
           />
         </ChartsContainer>
       ) : (
-        isFetched && 'данные за такой период не найдены'
+        isFetched && "данные за такой период не найдены"
       )}
     </Container>
   );
