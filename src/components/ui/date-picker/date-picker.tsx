@@ -1,9 +1,7 @@
-// @ts-ignore
-import React, { useState } from 'react';
-import { DatePicker as AntDatePicker, DatePickerProps as AntdDatePickerProps } from 'antd';
+import dateFnsGenerateConfig from 'rc-picker/lib/generate/dateFns';
+import generatePicker from 'antd/es/date-picker/generatePicker';
+import 'antd/es/date-picker/style/index';
 
-interface DatePickerProps extends AntdDatePickerProps {}
+const DatePicker = generatePicker<Date>(dateFnsGenerateConfig);
 
-export const DatePicker = ({ ...props }: DatePickerProps) => {
-  return <AntDatePicker {...props} />;
-};
+export default DatePicker;

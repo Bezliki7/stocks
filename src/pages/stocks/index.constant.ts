@@ -1,0 +1,63 @@
+export enum StocksEnum {
+  LKOH = 0,
+  MTSS = 1,
+  MVID = 2,
+  SBER = 3,
+  SIBN = 4,
+  VTBR = 5,
+  ROSB = 6,
+  ROSN = 7,
+  GAZP = 8,
+  BANE = 9,
+}
+
+export const STOCK_NAMES = {
+  LKOH: 'LKOH',
+  MTSS: 'MTSS',
+  MVID: 'MVID',
+  SBER: 'SBER',
+  SIBN: 'SIBN',
+  VTBR: 'VTBR',
+  ROSB: 'ROSB',
+  ROSN: 'ROSN',
+  GAZP: 'GAZP',
+  BANE: 'BANE',
+} as const;
+
+export const CONVERT_STOCKS = {
+  TO_ENUM: {
+    [STOCK_NAMES.BANE]: StocksEnum.BANE,
+    [STOCK_NAMES.GAZP]: StocksEnum.GAZP,
+    [STOCK_NAMES.LKOH]: StocksEnum.LKOH,
+    [STOCK_NAMES.MTSS]: StocksEnum.MTSS,
+    [STOCK_NAMES.MVID]: StocksEnum.MVID,
+    [STOCK_NAMES.ROSB]: StocksEnum.ROSB,
+    [STOCK_NAMES.ROSN]: StocksEnum.ROSN,
+    [STOCK_NAMES.SBER]: StocksEnum.SBER,
+    [STOCK_NAMES.SIBN]: StocksEnum.SIBN,
+    [STOCK_NAMES.VTBR]: StocksEnum.VTBR,
+  },
+  TO_STR: {
+    [StocksEnum.BANE]: STOCK_NAMES.BANE,
+    [StocksEnum.GAZP]: STOCK_NAMES.GAZP,
+    [StocksEnum.LKOH]: STOCK_NAMES.LKOH,
+    [StocksEnum.MTSS]: STOCK_NAMES.MTSS,
+    [StocksEnum.MVID]: STOCK_NAMES.MVID,
+    [StocksEnum.ROSB]: STOCK_NAMES.ROSB,
+    [StocksEnum.ROSN]: STOCK_NAMES.ROSN,
+    [StocksEnum.SBER]: STOCK_NAMES.SBER,
+    [StocksEnum.SIBN]: STOCK_NAMES.SIBN,
+    [StocksEnum.VTBR]: STOCK_NAMES.VTBR,
+  },
+};
+
+// LKOH: 'Лукойл',
+// MTSS: 'Мтс',
+// MVID: 'МВидео',
+// SBER: 'Сбербанк',
+// SIBN: 'Газпромнефть',
+// VTBR: 'Втб',
+// ROSB: 'Росбанк',
+// ROSN: 'РосНефть',
+// GAZP: 'Газпром',
+// BANE: 'Башнефть',

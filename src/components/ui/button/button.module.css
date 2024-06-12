@@ -1,12 +1,17 @@
 .default{
-    color: #ccc;
-    background-color: #2a0094;
+    color: #efededf5;
+    background-color: #260086dc;
     border: none;
     border-radius: 5px;
+
+
+    &:disabled {
+        background-color: #2a009580 !important;
+    }
 }
 
 .ghost {
-    color: #000000;
+    color: #00000083;
     background-color: #ffffff;
     border: none;
     border-radius: 5px;

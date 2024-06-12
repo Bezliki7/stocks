@@ -1,5 +1,4 @@
-// @ts-ignore
-import React, { createContext } from 'react';
+import { createContext } from 'react';
 import { Store } from './store';
 
 export const contextValue = {
