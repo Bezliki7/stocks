@@ -18,7 +18,7 @@ const PredictionModal = () => {
 
   const methods = useForm<FormFields>();
 
-  const { trigger, formState } = methods;
+  const { trigger } = methods;
 
   const handleClose = () => {
     store.setPredictionModalOpen(false);
@@ -26,12 +26,9 @@ const PredictionModal = () => {
 
   const handleSave = async () => {
     const isValid = await trigger('name');
-    console.log(formState.errors);
-    console.log(isValid);
+
     if (isValid) {
       store.save();
-    } else {
-      console.log('asd');
     }
   };
 

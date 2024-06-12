@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useForm } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 import Fieldset from '../../../../../../../components/fieldset/fieldset';
 import Input from '../../../../../../../components/ui/input/input';
@@ -12,7 +12,7 @@ import type { FormFields } from '../../../../../../../store/store.interface';
 export const Name = () => {
   const { store } = useStore();
 
-  const { register, formState, trigger } = useForm<FormFields>();
+  const { register, formState, trigger } = useFormContext<FormFields>();
 
   const nameField = register('name', {
     required: {

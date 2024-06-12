@@ -7,6 +7,7 @@ import { convertPeriodType } from '../utils/period';
 import { CONVERT_STOCKS, StocksEnum } from '../pages/stocks/index.constant';
 import { DATE_FORMAT } from './store.constant';
 import { ApiClient } from '../api/api-client';
+import { transformDate } from '../utils/train-model';
 
 import type {
   IStore,
@@ -16,7 +17,6 @@ import type {
   PredictionOnStocks,
   Portfolio,
 } from './store.interface';
-import { transformDate } from '../utils/train-model';
 
 export class Store {
   public model: undefined | tf.LayersModel | tf.Sequential;
