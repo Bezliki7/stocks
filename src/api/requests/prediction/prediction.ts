@@ -8,6 +8,7 @@ import type {
   UpdatePortfolioDto,
   GetMoexIndexesByPeriodDto,
 } from './prediction.interface';
+import type { MoexIndex } from '../../../store/store.interface';
 
 class PredictionService {
   public createPorfolio(dto: CreatePortfolioDto, config?: AxiosRequestConfig) {
@@ -31,7 +32,7 @@ class PredictionService {
   }
 
   public putMoexIndexesByPeriod(dto: GetMoexIndexesByPeriodDto, config?: AxiosRequestConfig) {
-    return api.put(URLS.PREDICTION.GET_MOEX_INDEXES_BY_PERIOD, dto, config);
+    return api.put<MoexIndex[]>(URLS.PREDICTION.GET_MOEX_INDEXES_BY_PERIOD, dto, config);
   }
 
   public getStocks(config?: AxiosRequestConfig) {

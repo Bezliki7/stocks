@@ -4,9 +4,10 @@ import { observer } from 'mobx-react-lite';
 import { PeriodContainer } from './period.css';
 import useStore from '../../../../../../../hooks/use-store';
 import { PERIOD_TYPE, TRANSLATED_PERIOD_TYPE } from './period.constant';
-import { PeriodType } from '../../../../../../../store/store.interface';
 import RadioButtonGroup from '../../../../../../../components/ui/radio-button/radio-button';
 import Fieldset from '../../../../../../../components/fieldset/fieldset';
+
+import type { PeriodType } from '../../../../../../../store/store.interface';
 
 const PeriodSelector = () => {
   const { store } = useStore();

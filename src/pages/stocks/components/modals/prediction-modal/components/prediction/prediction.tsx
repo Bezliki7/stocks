@@ -41,7 +41,10 @@ const Prediction = () => {
   return (
     <Fieldset title="Портфель">
       <PredictionContainer>
-        <Button variant="default" onClick={handleGetPredictions}>
+        <Button
+          disabled={!store.moexIndexes.length}
+          variant="default"
+          onClick={handleGetPredictions}>
           Получить акции
         </Button>
 
@@ -63,7 +66,7 @@ const Prediction = () => {
                 <ImageContainer>
                   <img src={`src/assets/images/${p.name}.jpg`} />
                 </ImageContainer>
-                {p.name + ' - '} средняя цена {Math.round(p.profit) + 'p'} - {p.mae}
+                {p.name}: доход {p.profit.toFixed(2)}% - {p.mae.toFixed(2)} погр.
               </PredictionRow>
             ))}
           </StocksContainer>

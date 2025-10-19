@@ -37,8 +37,15 @@ export const Name = () => {
   return (
     <Fieldset title="Название">
       <NameContainer>
-        <Input {...nameField} value={store.name} autoComplete="off" />
-        <ErrorMessage>{formState.errors.name?.message}</ErrorMessage>
+        <Input
+          {...nameField}
+          value={store.name}
+          autoComplete="off"
+          isError={!!formState.errors.name?.message && store.isFormSubmitted}
+        />
+        {store.isFormSubmitted ? (
+          <ErrorMessage>{formState.errors.name?.message}</ErrorMessage>
+        ) : null}
       </NameContainer>
     </Fieldset>
   );

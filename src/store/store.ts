@@ -2,6 +2,7 @@ import { flow, makeAutoObservable } from 'mobx';
 import * as tf from '@tensorflow/tfjs';
 import { eachDayOfInterval, format, parse, subYears } from 'date-fns';
 
+import { BASE_URL, URLS } from '../api/requests/requests.constant';
 import { PERIOD_TYPE } from '../pages/stocks/components/modals/prediction-modal/components/period/period.constant';
 import { convertPeriodType } from '../utils/period';
 import { CONVERT_STOCKS, StocksEnum } from '../pages/stocks/index.constant';
@@ -13,7 +14,7 @@ import type {
   IStore,
   PeriodType,
   Stocks,
-  MoexIndexes,
+  MoexIndex,
   PredictionOnStocks,
   Portfolio,
 } from './store.interface';
@@ -25,6 +26,7 @@ export class Store {
   public isLoading: boolean = false;
   public selectedPortfolioId: number | undefined;
   public predictionsIsReady: boolean = false;
+  public isFormSubmitted: boolean = false;
 
   public name: string | undefined = '';
 
@@ -32,7 +34,7 @@ export class Store {
 
   public startDate: Date = subYears(new Date(), 2);
   public endDate: Date = new Date();
-  public moexIndexes: MoexIndexes[] = [];
+  public moexIndexes: MoexIndex[] = [];
 
   public dateOfCreation: Date = new Date();
   public periodType: PeriodType = PERIOD_TYPE.SHORT;
