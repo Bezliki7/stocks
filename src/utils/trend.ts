@@ -1,7 +1,6 @@
-function fitLinearRegression(data: number[]) {
+export function fitLinearRegression(data: number[]) {
   const n = data.length;
 
-  // Вычисление сумм
   let sumX = 0;
   let sumY = 0;
   let sumXY = 0;
@@ -16,10 +15,8 @@ function fitLinearRegression(data: number[]) {
 
   // Вычисление коэффициентов линейной регрессии (a и b)
   const a = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2);
-  const b = (sumY - a * sumX) / n;
 
-  // Возвращение объекта с коэффициентами
-  return { slope: a, intercept: b };
+  return { slope: a };
 }
 
 export const determineTrendType = (data: number[]) => {

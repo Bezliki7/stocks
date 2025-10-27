@@ -9,257 +9,291 @@ import { CONVERT_STOCKS, StocksEnum } from '../pages/stocks/index.constant';
 import { DATE_FORMAT } from './store.constant';
 import { ApiClient } from '../api/api-client';
 import { transformDate } from '../utils/train-model';
+import { fitLinearRegression } from '../utils/trend';
 
 import type {
-  IStore,
-  PeriodType,
-  Stocks,
-  MoexIndex,
-  PredictionOnStocks,
-  Portfolio,
+	IStore,
+	PeriodType,
+	Stocks,
+	MoexIndex,
+	PredictionOnStocks,
+	Portfolio,
 } from './store.interface';
 
 export class Store {
-  public model: undefined | tf.LayersModel | tf.Sequential;
-  public isPredictionModalOpen: boolean = false;
-  public isEdit: boolean = false;
-  public isLoading: boolean = false;
-  public selectedPortfolioId: number | undefined;
-  public predictionsIsReady: boolean = false;
-  public isFormSubmitted: boolean = false;
+	public model: undefined | tf.LayersModel | tf.Sequential;
+	public isPredictionModalOpen: boolean = false;
+	public isEdit: boolean = false;
+	public isLoading: boolean = false;
+	public selectedPortfolioId: number | undefined;
+	public predictionsIsReady: boolean = false;
+	public isFormSubmitted: boolean = false;
 
-  public name: string | undefined = '';
+	public name: string | undefined = '';
 
-  public isMoreRisk: boolean = false;
+	public isMoreRisk: boolean = false;
 
-  public startDate: Date = subYears(new Date(), 2);
-  public endDate: Date = new Date();
-  public moexIndexes: MoexIndex[] = [];
+	public startDate: Date = subYears(new Date(), 2);
+	public endDate: Date = new Date();
+	public moexIndexes: MoexIndex[] = [];
 
-  public dateOfCreation: Date = new Date();
-  public periodType: PeriodType = PERIOD_TYPE.SHORT;
+	public dateOfCreation: Date = new Date();
+	public periodType: PeriodType = PERIOD_TYPE.SHORT;
 
-  public portfolios: Portfolio[] = [];
+	public portfolios: Portfolio[] = [];
 
-  public stocks: Stocks[] = [];
-  public predictionOnStocks: PredictionOnStocks[] = [];
+	public stocks: Stocks[] = [];
+	public predictionOnStocks: PredictionOnStocks[] = [];
 
-  public setPredictionModalOpen(value: boolean) {
-    this.isPredictionModalOpen = value;
-  }
+	public setPredictionModalOpen(value: boolean) {
+		this.isPredictionModalOpen = value;
+	}
 
-  public setSelectedPortfolioId(id: number) {
-    this.selectedPortfolioId = id;
-  }
+	public setSelectedPortfolioId(id: number) {
+		this.selectedPortfolioId = id;
+	}
 
-  public get selectedPortfolio() {
-    return this.portfolios.find(({ id }) => id === this.selectedPortfolioId);
-  }
+	public get selectedPortfolio() {
+		return this.portfolios.find(({ id }) => id === this.selectedPortfolioId);
+	}
 
-  constructor() {
-    makeAutoObservable(this);
-  }
+	constructor() {
+		makeAutoObservable(this);
+	}
 
-  public setProperties(payload: Partial<IStore>) {
-    for (const key of Object.keys(payload)) {
-      // @ts-ignore гарантировано правильный тип
-      if (payload[key] !== undefined) {
-        // @ts-ignore гарантировано правильный тип
-        this[key] = payload[key];
-      }
-    }
-  }
+	public setProperties(payload: Partial<IStore>) {
+		for (const key of Object.keys(payload)) {
+			// @ts-ignore гарантировано правильный тип
+			if (payload[key] !== undefined) {
+				// @ts-ignore гарантировано правильный тип
+				this[key] = payload[key];
+			}
+		}
+	}
 
-  public getMoexIndexesByPeriod = flow(function* (this: Store) {
-    const apiClient = new ApiClient();
-    const res = yield apiClient.prediction.putMoexIndexesByPeriod({
-      startDate: this.startDate,
-      endDate: this.endDate,
-    });
+	public getMoexIndexesByPeriod = flow(function* (this: Store) {
+		const apiClient = new ApiClient();
+		const res = yield apiClient.prediction.getMoexIndexesByPeriod({
+			startDate: this.startDate,
+			endDate: this.endDate,
+		});
 
-    this.moexIndexes = res.data;
-  });
+		this.moexIndexes = res.data;
+	});
 
-  public getStocks = flow(function* (this: Store) {
-    const apiClient = new ApiClient();
-    const res = yield apiClient.prediction.getStocks();
+	public getStocks = flow(function* (this: Store) {
+		const apiClient = new ApiClient();
+		const res = yield apiClient.prediction.getStocks();
 
-    this.stocks = res.data;
-  });
+		this.stocks = res.data;
+	});
 
-  public getPrediction() {
-    const endDate = parse(convertPeriodType(this.periodType), DATE_FORMAT, 0);
-    const days = eachDayOfInterval({ start: new Date(), end: endDate });
-    const predictionsMap = new Map<string, number[]>();
+	public async getModel() {
+		if (this.model) {
+			return this.model;
+		}
 
-    days.forEach((day) => {
-      const formatedDate = +format(day, 'yyMMdd');
+		const model = await tf.loadLayersModel(
+			BASE_URL + URLS.PREDICTION.GET_MODEL,
+		);
+		this.model = model;
+		return model;
+	}
 
-      if (this.model) {
-        const { length } = this.predictionOnStocks;
+	public async getPrediction() {
+		const endDate = parse(convertPeriodType(this.periodType), DATE_FORMAT, 0);
+		const days = eachDayOfInterval({ start: new Date(), end: endDate });
+		const predictionsMap = new Map<string, number[]>();
+		const indexes = this.moexIndexes.map(el => +el.index);
+		const { slope } = fitLinearRegression(indexes);
+		const model = await this.getModel();
 
-        for (let stockCode = 0; stockCode < length; stockCode++) {
-          const currentStockName = CONVERT_STOCKS.TO_STR[stockCode as StocksEnum];
+		days.forEach(day => {
+			const formatedDate = +format(day, 'yyMMdd');
 
-          const input = [...transformDate(formatedDate), stockCode];
-          const inputTensor = tf.tensor2d([input], [1, 4]);
+			if (model) {
+				const { length } = this.predictionOnStocks;
 
-          const prediction = this.model.predict(inputTensor) as tf.Tensor;
-          const predictionValue = prediction.dataSync()[0];
+				for (let stockCode = 0; stockCode < length; stockCode++) {
+					const currentStockName =
+						CONVERT_STOCKS.TO_STR[stockCode as StocksEnum];
 
-          const stocksPrices = predictionsMap.get(currentStockName) ?? [];
+					const input = [...transformDate(formatedDate), stockCode, slope];
+					const inputTensor = tf.tensor2d([input], [1, 5]);
 
-          predictionsMap.set(currentStockName, [...stocksPrices, predictionValue]);
-        }
-      }
-    });
+					const prediction = model.predict(inputTensor) as tf.Tensor;
+					const predictionValue = prediction.dataSync()[0];
 
-    for (const [name, predictionPrices] of predictionsMap.entries()) {
-      const profit = predictionPrices.reduce((acc, price) => acc + price, 0);
+					const stocksPrices = predictionsMap.get(currentStockName) ?? [];
 
-      this.predictionOnStocks.map((predictionOnStock, index) => {
-        if (predictionOnStock.name === name) {
-          this.predictionOnStocks[index] = {
-            ...this.predictionOnStocks[index],
-            profit: profit / predictionPrices.length,
-          };
-        }
-      });
-    }
+					predictionsMap.set(currentStockName, [
+						...stocksPrices,
+						predictionValue,
+					]);
+				}
+			}
+		});
 
-    if (!this.predictionsIsReady) {
-      this.filterStocksInfo();
-    }
-  }
+		for (const [name, predictionPrices] of predictionsMap.entries()) {
+			let max = 0;
+			predictionPrices.forEach(el => {
+				if (el > max && el !== predictionPrices[0]) {
+					max = el;
+				}
+			});
+			const profit = (max / predictionPrices[0] - 1) * 100;
 
-  public get dto(): Omit<Portfolio, 'id'> {
-    return {
-      name: this.name ?? '',
-      dateOfCreation: new Date(),
-      startDate: this.startDate!,
-      endDate: this.endDate!,
-      isMoreRisk: this.isMoreRisk,
-      periodType: this.periodType,
-      predictions: this.predictionOnStocks.map((predictionOnStock) => ({
-        meanAbsoluteError: predictionOnStock.mae,
-        stockName: predictionOnStock.name,
-        profit: predictionOnStock.profit,
-      })),
-    };
-  }
+			this.predictionOnStocks.map((predictionOnStock, index) => {
+				if (predictionOnStock.name === name) {
+					this.predictionOnStocks[index] = {
+						...this.predictionOnStocks[index],
+						profit,
+					};
+				}
+			});
+		}
 
-  public getPortfolios = flow(function* (this: Store) {
-    const apiClient = new ApiClient();
+		if (!this.predictionsIsReady) {
+			this.filterStocksInfo();
+		}
+	}
 
-    const response = yield apiClient.prediction.getPortfolios();
+	public get dto(): Omit<Portfolio, 'id'> {
+		return {
+			name: this.name ?? '',
+			dateOfCreation: new Date(),
+			startDate: this.startDate!,
+			endDate: this.endDate!,
+			isMoreRisk: this.isMoreRisk,
+			periodType: this.periodType,
+			predictions: this.predictionOnStocks.map(predictionOnStock => ({
+				meanAbsoluteError: predictionOnStock.mae,
+				stockName: predictionOnStock.name,
+				profit: predictionOnStock.profit,
+			})),
+		};
+	}
 
-    this.portfolios = response.data;
-  });
+	public getPortfolios = flow(function* (this: Store) {
+		const apiClient = new ApiClient();
 
-  public createPortfolio = flow(function* (this: Store) {
-    const apiClient = new ApiClient();
-    const response = yield apiClient.prediction.createPorfolio(this.dto);
+		const response = yield apiClient.prediction.getPortfolios();
 
-    this.portfolios.push(response.data);
-  });
+		this.portfolios = response.data;
+	});
 
-  public updatePortfolio = flow(function* (this: Store) {
-    if (this.selectedPortfolioId) {
-      const apiClient = new ApiClient();
+	public createPortfolio = flow(function* (this: Store) {
+		const apiClient = new ApiClient();
+		const response = yield apiClient.prediction.createPorfolio(this.dto);
 
-      const response = yield apiClient.prediction.updatedPortfolio(
-        this.selectedPortfolioId,
-        this.dto,
-      );
+		this.portfolios.push(response.data);
+	});
 
-      const index = this.portfolios.findIndex(({ id }) => id === response.data.id);
-      this.portfolios[index] = response.data;
-    }
-  });
+	public updatePortfolio = flow(function* (this: Store) {
+		if (this.selectedPortfolioId) {
+			const apiClient = new ApiClient();
 
-  public deletePortdolio = flow(function* (this: Store) {
-    try {
-      if (this.selectedPortfolioId) {
-        const apiClient = new ApiClient();
+			const response = yield apiClient.prediction.updatedPortfolio(
+				this.selectedPortfolioId,
+				this.dto,
+			);
 
-        yield apiClient.prediction.deletePortfolio(this.selectedPortfolioId);
+			const index = this.portfolios.findIndex(
+				({ id }) => id === response.data.id,
+			);
+			this.portfolios[index] = response.data;
+		}
+	});
 
-        this.portfolios = this.portfolios.filter(
-          (portfolio) => portfolio.id !== this.selectedPortfolioId,
-        );
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  });
+	public deletePortdolio = flow(function* (this: Store) {
+		try {
+			if (this.selectedPortfolioId) {
+				const apiClient = new ApiClient();
 
-  public clear() {
-    this.name = '';
-    this.periodType = PERIOD_TYPE.SHORT;
-    this.isMoreRisk = false;
-    this.moexIndexes = [];
-    this.startDate = subYears(new Date(), 2);
-    this.endDate = new Date();
-    this.predictionOnStocks = [];
-    this.predictionsIsReady = false;
-  }
+				yield apiClient.prediction.deletePortfolio(this.selectedPortfolioId);
 
-  public applyPortfolio(data: Portfolio) {
-    this.name = data.name;
-    this.isMoreRisk = data.isMoreRisk;
-    this.endDate = data.endDate;
-    this.startDate = data.startDate;
-    this.predictionOnStocks = data.predictions.map((predictoin) => ({
-      mae: predictoin.meanAbsoluteError,
-      name: predictoin.stockName,
-      profit: predictoin.profit,
-    }));
-    this.periodType = data.periodType;
-    this.dateOfCreation = data.dateOfCreation;
-    this.predictionsIsReady = true;
-  }
+				this.portfolios = this.portfolios.filter(
+					portfolio => portfolio.id !== this.selectedPortfolioId,
+				);
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	});
 
-  public openPredictionModalToEdit = () => {
-    if (this.selectedPortfolio) {
-      this.isPredictionModalOpen = true;
-      this.isEdit = true;
-      this.applyPortfolio(this.selectedPortfolio);
-    }
-  };
+	public clear() {
+		this.name = '';
+		this.periodType = PERIOD_TYPE.SHORT;
+		this.isMoreRisk = false;
+		this.moexIndexes = [];
+		this.startDate = subYears(new Date(), 2);
+		this.endDate = new Date();
+		this.predictionOnStocks = [];
+		this.predictionsIsReady = false;
+	}
 
-  public openPredictionModalToCreate = () => {
-    this.clear();
-    this.isPredictionModalOpen = true;
-  };
+	public applyPortfolio(data: Portfolio) {
+		this.name = data.name;
+		this.isMoreRisk = data.isMoreRisk;
+		this.endDate = data.endDate;
+		this.startDate = data.startDate;
+		this.predictionOnStocks = data.predictions.map(predictoin => ({
+			mae: predictoin.meanAbsoluteError,
+			name: predictoin.stockName,
+			profit: predictoin.profit,
+		}));
+		this.periodType = data.periodType;
+		this.dateOfCreation = data.dateOfCreation;
+		this.predictionsIsReady = true;
+	}
 
-  public save = () => {
-    if (this.isEdit) {
-      this.updatePortfolio();
-    } else {
-      this.createPortfolio();
-    }
-  };
+	public openPredictionModalToEdit = () => {
+		if (this.selectedPortfolio) {
+			this.isPredictionModalOpen = true;
+			this.isEdit = true;
+			this.applyPortfolio(this.selectedPortfolio);
+		}
+	};
 
-  private filterStocksInfo = () => {
-    if (this.isMoreRisk) {
-      this.predictionOnStocks = this.predictionOnStocks.sort((a, b) => a.profit - b.profit);
-    } else {
-      this.predictionOnStocks = this.predictionOnStocks.sort((a, b) => b.mae - a.mae);
-    }
+	public openPredictionModalToCreate = () => {
+		this.clear();
+		this.isPredictionModalOpen = true;
+	};
 
-    const halfOfLength = this.predictionOnStocks.length / 2;
-    this.predictionOnStocks = this.predictionOnStocks.slice(halfOfLength).reverse();
-    this.predictionsIsReady = true;
-  };
+	public save = () => {
+		if (this.isEdit) {
+			this.updatePortfolio();
+		} else {
+			this.createPortfolio();
+		}
+	};
 
-  public setMaesOnStocks = (maes: number[]) => {
-    this.predictionOnStocks = [];
-    this.predictionsIsReady = false;
+	private filterStocksInfo = () => {
+		if (this.isMoreRisk) {
+			this.predictionOnStocks = this.predictionOnStocks.sort(
+				(a, b) => a.profit - b.profit,
+			);
+		} else {
+			this.predictionOnStocks = this.predictionOnStocks.sort(
+				(a, b) => b.mae - a.mae,
+			);
+		}
 
-    maes.map((mae, nameCode: StocksEnum) => {
-      const stockName = CONVERT_STOCKS.TO_STR[nameCode];
+		const halfOfLength = this.predictionOnStocks.length / 2;
+		this.predictionOnStocks = this.predictionOnStocks
+			.slice(halfOfLength)
+			.reverse();
+		this.predictionsIsReady = true;
+	};
 
-      this.predictionOnStocks.push({ mae, name: stockName, profit: 0 });
-    });
-  };
+	public setMaesOnStocks = (maes: number[]) => {
+		this.predictionOnStocks = [];
+		this.predictionsIsReady = false;
+
+		maes.map((mae, nameCode: StocksEnum) => {
+			const stockName = CONVERT_STOCKS.TO_STR[nameCode];
+
+			this.predictionOnStocks.push({ mae, name: stockName, profit: 0 });
+		});
+	};
 }
