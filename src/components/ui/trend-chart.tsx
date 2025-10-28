@@ -17,7 +17,7 @@ export const TrendChart = ({ data }: { data: any[] }) => {
         <Chart
           width={'600px'}
           height={'350px'}
-          chartType="ScatterChart"
+          chartType='ScatterChart'
           loader={<div>Loading Chart</div>}
           data={data}
           options={TrendOptions}

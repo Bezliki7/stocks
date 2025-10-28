@@ -5,7 +5,7 @@ import { runInAction } from 'mobx';
 import useStore from '../../../../hooks/use-store';
 import { Container, ListContainer } from './stocks.css';
 import Modals from '../modals/modals';
-import trainModel from '../../../../utils/train-model';
+import { trainModel } from '../../../../utils/train-model';
 import List from '../list/list';
 import Header from '../header/header';
 

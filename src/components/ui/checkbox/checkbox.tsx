@@ -12,7 +12,7 @@ const Checkbox = ({ title, checked, onChange }: CheckboxProps) => {
 
   return (
     <CheckboxContainer>
-      <input type="checkbox" checked={checked} onChange={handleChange} />
+      <input type='checkbox' checked={checked} onChange={handleChange} />
       <label>{title}</label>
     </CheckboxContainer>
   );

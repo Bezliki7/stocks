@@ -35,12 +35,12 @@ export const Name = () => {
   });
 
   return (
-    <Fieldset title="Название">
+    <Fieldset title='Название'>
       <NameContainer>
         <Input
           {...nameField}
           value={store.name}
-          autoComplete="off"
+          autoComplete='off'
           isError={!!formState.errors.name?.message && store.isFormSubmitted}
         />
         {store.isFormSubmitted ? (

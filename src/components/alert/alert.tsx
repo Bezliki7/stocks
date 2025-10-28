@@ -4,7 +4,13 @@ import { faX } from '@fortawesome/free-solid-svg-icons';
 import { createPortal } from 'react-dom';
 
 import { Button } from '../ui';
-import { AlertContainer, ModalContent, ModalFooter, ModalHeader, Title } from './alert.css';
+import {
+  AlertContainer,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Title,
+} from './alert.css';
 
 import { AlertProps } from './alert.interface';
 
@@ -27,13 +33,13 @@ const Alert = ({ children, onClose, title }: AlertProps) => {
         <ModalContent>
           <ModalHeader>
             <Title>{title}</Title>
-            <Button variant="ghost" onClick={onClose}>
-              <FontAwesomeIcon icon={faX} size="sm" />
+            <Button variant='ghost' onClick={onClose}>
+              <FontAwesomeIcon icon={faX} size='sm' />
             </Button>
           </ModalHeader>
           {children}
           <ModalFooter>
-            <Button variant="default" onClick={onClose}>
+            <Button variant='default' onClick={onClose}>
               Закрыть
             </Button>
           </ModalFooter>

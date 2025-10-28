@@ -26,7 +26,7 @@ const GraphChart = () => {
   };
   const arr: any = [['Index', 'Date']];
 
-  const indexes = store.moexIndexes.map((el) => +el.index);
+  const indexes = store.moexIndexes.map(el => +el.index);
   const dates = store.moexIndexes.map((el, i) => {
     const date = new Date(el.date);
     arr.push([date, indexes[i]]);
@@ -36,26 +36,27 @@ const GraphChart = () => {
   const type = determineTrendType(indexes);
 
   return (
-    <Fieldset title="График">
+    <Fieldset title='График'>
       <HeaderContainer>
         <DatePicker
           defaultValue={new Date(store.startDate)}
-          onChange={(value) => onChange('startDate', value.toISOString())}
+          onChange={value => onChange('startDate', value.toISOString())}
           style={{ height: 23 }}
         />
         <DatePicker
           defaultValue={new Date(store.endDate)}
-          onChange={(value) => onChange('endDate', value.toISOString())}
+          onChange={value => onChange('endDate', value.toISOString())}
           style={{ height: 23 }}
         />
-        <Button variant="default" onClick={handleClick}>
+        <Button variant='default' onClick={handleClick}>
           Получить данные
         </Button>
 
         <Button
-          variant="default"
+          variant='default'
           onClick={() => setAlertOpen(true)}
-          disabled={!store.moexIndexes.length}>
+          disabled={!store.moexIndexes.length}
+        >
           Просмотр графика
         </Button>
       </HeaderContainer>
@@ -71,7 +72,7 @@ const GraphChart = () => {
                   {
                     data: dates,
                     scaleType: 'time',
-                    valueFormatter: (date) => format(date, 'dd.MM.yyyy'),
+                    valueFormatter: date => format(date, 'dd.MM.yyyy'),
                   },
                 ]}
                 series={[

@@ -39,19 +39,21 @@ const Prediction = () => {
   };
 
   return (
-    <Fieldset title="Портфель">
+    <Fieldset title='Портфель'>
       <PredictionContainer>
         <Button
           disabled={!store.moexIndexes.length}
-          variant="default"
-          onClick={handleGetPredictions}>
+          variant='default'
+          onClick={handleGetPredictions}
+        >
           Получить акции
         </Button>
 
         <Button
-          variant="default"
+          variant='default'
           onClick={() => setAlertOpen(true)}
-          disabled={!store.predictionsIsReady || isLoading}>
+          disabled={!store.predictionsIsReady || isLoading}
+        >
           Просмотреть акции
         </Button>
       </PredictionContainer>
@@ -61,12 +63,13 @@ const Prediction = () => {
           <StocksContainer>
             <span>{alertTitle}</span>
 
-            {store.predictionOnStocks.map((p) => (
+            {store.predictionOnStocks.map(p => (
               <PredictionRow key={p.name}>
                 <ImageContainer>
                   <img src={`src/assets/images/${p.name}.jpg`} />
                 </ImageContainer>
-                {p.name}: доход {p.profit.toFixed(2)}% - {p.mae.toFixed(2)} погр.
+                {p.name}: доход {p.profit.toFixed(2)}% - {p.mae.toFixed(2)}{' '}
+                погр.
               </PredictionRow>
             ))}
           </StocksContainer>

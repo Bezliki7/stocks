@@ -12,7 +12,7 @@ import type { PeriodType } from '../../../../../../../store/store.interface';
 const PeriodSelector = () => {
   const { store } = useStore();
 
-  const options = Object.values(PERIOD_TYPE).map((v) => ({
+  const options = Object.values(PERIOD_TYPE).map(v => ({
     title: TRANSLATED_PERIOD_TYPE[v],
     value: v,
   }));
@@ -22,12 +22,12 @@ const PeriodSelector = () => {
   };
 
   return (
-    <Fieldset title="Срок владения">
+    <Fieldset title='Срок владения'>
       <PeriodContainer>
         <RadioButtonGroup
           defaultValue={store.periodType}
           options={options}
-          onChange={(v) => handleChange(v as PeriodType)}
+          onChange={v => handleChange(v as PeriodType)}
         />
       </PeriodContainer>
     </Fieldset>

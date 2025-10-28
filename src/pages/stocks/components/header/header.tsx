@@ -24,15 +24,23 @@ const Header = () => {
 
   return (
     <HeaderContainer>
-      <Button variant="ghost" onClick={handleAddClick}>
+      <Button variant='ghost' onClick={handleAddClick}>
         <FontAwesomeIcon icon={faPlus} />
       </Button>
 
-      <Button variant="ghost" onClick={handleUpdateClick} disabled={!store.selectedPortfolioId}>
+      <Button
+        variant='ghost'
+        onClick={handleUpdateClick}
+        disabled={!store.selectedPortfolioId}
+      >
         <FontAwesomeIcon icon={faPen} />
       </Button>
 
-      <Button variant="ghost" onClick={handleDeleteClick} disabled={!store.selectedPortfolioId}>
+      <Button
+        variant='ghost'
+        onClick={handleDeleteClick}
+        disabled={!store.selectedPortfolioId}
+      >
         <FontAwesomeIcon icon={faTrash} />
       </Button>
     </HeaderContainer>

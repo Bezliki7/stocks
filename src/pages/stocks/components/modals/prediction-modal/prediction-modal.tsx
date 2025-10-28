@@ -14,38 +14,38 @@ import Name from './components/name/name';
 import type { FormFields } from '../../../../../store/store.interface';
 
 const PredictionModal = () => {
-	const { store } = useStore();
+  const { store } = useStore();
 
-	const methods = useForm<FormFields>();
+  const methods = useForm<FormFields>();
 
-	const { trigger } = methods;
+  const { trigger } = methods;
 
-	const handleClose = () => {
-		store.setPredictionModalOpen(false);
-	};
+  const handleClose = () => {
+    store.setPredictionModalOpen(false);
+  };
 
-	const handleSave = async () => {
-		store.setProperties({ isFormSubmitted: true });
-		const isValid = await trigger('name');
+  const handleSave = async () => {
+    store.setProperties({ isFormSubmitted: true });
+    const isValid = await trigger('name');
 
-		if (isValid) {
-			store.save();
-		}
-	};
+    if (isValid) {
+      store.save();
+    }
+  };
 
-	return (
-		<Modal onClose={handleClose} onSave={handleSave}>
-			<ModalContent>
-				<FormProvider {...methods}>
-					<Name />
-					<GraphChart />
-					<RiskSelector />
-					<PeriodSelector />
-					<Prediction />
-				</FormProvider>
-			</ModalContent>
-		</Modal>
-	);
+  return (
+    <Modal onClose={handleClose} onSave={handleSave}>
+      <ModalContent>
+        <FormProvider {...methods}>
+          <Name />
+          <GraphChart />
+          <RiskSelector />
+          <PeriodSelector />
+          <Prediction />
+        </FormProvider>
+      </ModalContent>
+    </Modal>
+  );
 };
 
 export default observer(PredictionModal);

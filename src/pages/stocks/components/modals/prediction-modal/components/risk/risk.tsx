@@ -13,9 +13,9 @@ const RiskSelector = () => {
   };
 
   return (
-    <Fieldset title="Риск портфеля">
+    <Fieldset title='Риск портфеля'>
       <Checkbox
-        title="Выбор боллее прибыльных и рисковых портфелей"
+        title='Выбор боллее прибыльных и рисковых портфелей'
         checked={store.isMoreRisk}
         onChange={handleChange}
       />

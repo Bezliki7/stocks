@@ -18,7 +18,7 @@ export const Item = styled.div<{ selected: boolean }>`
   padding: 0px 3px;
   height: 20px;
   border-radius: 1px;
-  border: ${(props) => (props.selected ? '1px solid #a0a0a0;' : '')};
+  border: ${props => (props.selected ? '1px solid #a0a0a0;' : '')};
 
   &:hover {
     background-color: #e1e0e0;

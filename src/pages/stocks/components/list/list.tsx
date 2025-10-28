@@ -17,11 +17,12 @@ const List = () => {
 
   return (
     <Container>
-      {store.portfolios.map((portfolio) => (
+      {store.portfolios.map(portfolio => (
         <Item
           selected={store.selectedPortfolioId === portfolio.id}
           key={portfolio.id}
-          onClick={() => store.setSelectedPortfolioId(portfolio.id)}>
+          onClick={() => store.setSelectedPortfolioId(portfolio.id)}
+        >
           {portfolio.name}
         </Item>
       ))}

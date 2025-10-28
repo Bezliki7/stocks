@@ -1,66 +1,66 @@
 export interface IStore {
-	name: string;
-	startDate: Date;
-	endDate: Date;
-	stocks: Stocks[];
-	periodType: PeriodType;
-	isMoreRisk: boolean;
-	moexIndexes: MoexIndex[];
-	predictionOnStocks: PredictionOnStocks[];
-	isFormSubmitted: boolean;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  stocks: Stocks[];
+  periodType: PeriodType;
+  isMoreRisk: boolean;
+  moexIndexes: MoexIndex[];
+  predictionOnStocks: PredictionOnStocks[];
+  isFormSubmitted: boolean;
 }
 
 export type Stocks = {
-	id: number;
-	name: StockNames;
-	date: Date;
-	index: number;
+  id: number;
+  name: StockNames;
+  date: Date;
+  index: number;
 };
 
 export type MoexIndex = { name: 'IMOEX' } & Omit<
-	Stocks,
-	'name' | 'profit' | 'mae'
+  Stocks,
+  'name' | 'profit' | 'mae'
 >;
 
 export type PeriodType = 'short' | 'mid' | 'long';
 
 export type StockNames =
-	| 'LKOH'
-	| 'MTSS'
-	| 'MVID'
-	| 'SBER'
-	| 'SIBN'
-	| 'VTBR'
-	| 'ROSB'
-	| 'ROSN'
-	| 'GAZP'
-	| 'BANE';
+  | 'LKOH'
+  | 'MTSS'
+  | 'MVID'
+  | 'SBER'
+  | 'SIBN'
+  | 'VTBR'
+  | 'ROSB'
+  | 'ROSN'
+  | 'GAZP'
+  | 'BANE';
 
 export type PredictionOnStocks = {
-	name: StockNames;
-	mae: number;
-	profit: number;
+  name: StockNames;
+  mae: number;
+  profit: number;
 };
 
 export type Portfolio = {
-	id: number;
-	name: string;
-	isMoreRisk: boolean;
-	periodType: 'short' | 'mid' | 'long';
-	dateOfCreation: Date;
-	startDate: Date;
-	endDate: Date;
-	predictions: Prediction[];
+  id: number;
+  name: string;
+  isMoreRisk: boolean;
+  periodType: 'short' | 'mid' | 'long';
+  dateOfCreation: Date;
+  startDate: Date;
+  endDate: Date;
+  predictions: Prediction[];
 };
 
 export type Prediction = {
-	stockName: StockNames;
-	meanAbsoluteError: number;
-	profit: number;
+  stockName: StockNames;
+  meanAbsoluteError: number;
+  profit: number;
 };
 
 export type GetPortfoliosResponsePayload = Portfolio[];
 
 export type FormFields = {
-	name: string;
+  name: string;
 };
