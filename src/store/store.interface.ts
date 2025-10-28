@@ -1,5 +1,8 @@
+import * as tf from '@tensorflow/tfjs';
+
 export interface IStore {
-  name: string;
+  model?: tf.LayersModel | tf.Sequential;
+  name?: string;
   startDate: Date;
   endDate: Date;
   stocks: Stocks[];
@@ -8,6 +11,8 @@ export interface IStore {
   moexIndexes: MoexIndex[];
   predictionOnStocks: PredictionOnStocks[];
   isFormSubmitted: boolean;
+  isPredictionModalOpen: boolean;
+  isModelInfoOpen: boolean;
 }
 
 export type Stocks = {

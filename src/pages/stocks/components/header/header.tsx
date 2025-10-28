@@ -1,7 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import {
+  faPlus,
+  faPen,
+  faTrash,
+  faMicrochip,
+} from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '../../../../components/ui';
 import useStore from '../../../../hooks/use-store';
@@ -11,7 +16,10 @@ const Header = () => {
   const { store } = useStore();
 
   const handleAddClick = () => {
-    store.openPredictionModalToCreate();
+    store.clear();
+    store.setProperties({
+      isPredictionModalOpen: true,
+    });
   };
 
   const handleUpdateClick = () => {
@@ -20,6 +28,12 @@ const Header = () => {
 
   const handleDeleteClick = () => {
     store.deletePortdolio();
+  };
+
+  const handleModelClick = () => {
+    store.setProperties({
+      isModelInfoOpen: true,
+    });
   };
 
   return (
@@ -42,6 +56,10 @@ const Header = () => {
         disabled={!store.selectedPortfolioId}
       >
         <FontAwesomeIcon icon={faTrash} />
+      </Button>
+
+      <Button variant='ghost' onClick={handleModelClick}>
+        <FontAwesomeIcon icon={faMicrochip} />
       </Button>
     </HeaderContainer>
   );

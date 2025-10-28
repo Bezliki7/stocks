@@ -74,17 +74,12 @@ export const trainModel = async (
     model = newModel;
   }
 
-  if (model) {
-    // model.save('downloads://model');
-  }
-
   const maes = await getMaes(data, model);
 
   return { maes, model };
 };
 
 const getDataForTraining = async (data: Stocks[]) => {
-  console.log(data);
   let counter = 0;
   let slope = 0;
   const countRestart = 80;
@@ -107,7 +102,6 @@ const getDataForTraining = async (data: Stocks[]) => {
           data[index + countRestart]?.date ?? data[data.length - 1].date;
         const moexes = moexIndexes.data.filter(moex => {
           if (moex.date >= startDate && moex.date <= endDate) {
-            console.log(moex.date, moex.index);
             return true;
           }
           return false;
@@ -115,7 +109,7 @@ const getDataForTraining = async (data: Stocks[]) => {
 
         const indexes = moexes.map(el => +el.index);
         const linearRegression = fitLinearRegression(indexes);
-        console.log(indexes, slope, endDate);
+
         slope = linearRegression.slope ? linearRegression.slope : slope;
       }
 
@@ -135,7 +129,7 @@ const getDataForTraining = async (data: Stocks[]) => {
     item.slope,
   ]);
   const output = normalizedData.map(item => item!.price);
-  console.log(inputs);
+
   return { inputs, output };
 };
 

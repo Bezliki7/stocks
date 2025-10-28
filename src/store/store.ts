@@ -20,9 +20,10 @@ import type {
   Portfolio,
 } from './store.interface';
 
-export class Store {
+export class Store implements IStore {
   public model: undefined | tf.LayersModel | tf.Sequential;
   public isPredictionModalOpen: boolean = false;
+  public isModelInfoOpen: boolean = false;
   public isEdit: boolean = false;
   public isLoading: boolean = false;
   public selectedPortfolioId: number | undefined;
