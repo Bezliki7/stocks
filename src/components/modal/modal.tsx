@@ -37,12 +37,16 @@ const Modal = ({ children, onClose, onSave }: ModalProps) => {
           </ModalHeader>
           {children}
           <ModalFooter>
-            <Button variant='default' onClick={onClose}>
-              Отмена
-            </Button>
-            <Button variant='default' onClick={onSave}>
-              Сохранить
-            </Button>
+            {onClose && (
+              <Button variant='default' onClick={onClose}>
+                Закрыть
+              </Button>
+            )}
+            {onSave && (
+              <Button variant='default' onClick={onSave}>
+                Сохранить
+              </Button>
+            )}
           </ModalFooter>
         </ModalContent>
       </ModalContainer>
