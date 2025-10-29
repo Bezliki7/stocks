@@ -12,7 +12,7 @@ const Input = forwardRef(
     ref: React.ForwardedRef<HTMLInputElement>,
   ) => {
     return (
-      <InputContainer hasError={isError}>
+      <InputContainer err={isError}>
         <input ref={ref} {...props} style={{ height: 20 }} />
       </InputContainer>
     );
