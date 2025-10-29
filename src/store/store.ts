@@ -6,7 +6,7 @@ import { BASE_URL, URLS } from '../api/requests/requests.constant';
 import { PERIOD_TYPE } from '../pages/stocks/components/modals/prediction-modal/components/period/period.constant';
 import { convertPeriodType } from '../utils/period';
 import { CONVERT_STOCKS, StocksEnum } from '../pages/stocks/index.constant';
-import { DATE_FORMAT } from './store.constant';
+import { DATE_FORMAT, STOCKS_TYPE_COUNT } from './store.constant';
 import { ApiClient } from '../api/api-client';
 import { transformDate } from '../utils/train-model';
 import { fitLinearRegression } from '../utils/trend';
@@ -18,6 +18,7 @@ import type {
   MoexIndex,
   PredictionOnStocks,
   Portfolio,
+  StockNames,
 } from './store.interface';
 
 export class Store implements IStore {
@@ -45,6 +46,7 @@ export class Store implements IStore {
 
   public stocks: Stocks[] = [];
   public predictionOnStocks: PredictionOnStocks[] = [];
+  public maeByStockName: Record<string, number> = {};
 
   public setPredictionModalOpen(value: boolean) {
     this.isPredictionModalOpen = value;
@@ -64,9 +66,9 @@ export class Store implements IStore {
 
   public setProperties(payload: Partial<IStore>) {
     for (const key of Object.keys(payload)) {
-      // @ts-ignore гарантировано правильный тип
+      // @ts-expect-error гарантировано правильный тип
       if (payload[key] !== undefined) {
-        // @ts-ignore гарантировано правильный тип
+        // @ts-expect-error гарантировано правильный тип
         this[key] = payload[key];
       }
     }
@@ -104,7 +106,7 @@ export class Store implements IStore {
   public async getPrediction() {
     const endDate = parse(convertPeriodType(this.periodType), DATE_FORMAT, 0);
     const days = eachDayOfInterval({ start: new Date(), end: endDate });
-    const predictionsMap = new Map<string, number[]>();
+    const predictionsByStockName = new Map<string, number[]>();
     const indexes = this.moexIndexes.map(el => +el.index);
     const { slope } = fitLinearRegression(indexes);
     const model = await this.getModel();
@@ -112,30 +114,25 @@ export class Store implements IStore {
     days.forEach(day => {
       const formatedDate = +format(day, 'yyMMdd');
 
-      if (model) {
-        const { length } = this.predictionOnStocks;
+      for (let stockCode = 0; stockCode < STOCKS_TYPE_COUNT; stockCode++) {
+        const currentStockName = CONVERT_STOCKS.TO_STR[stockCode as StocksEnum];
 
-        for (let stockCode = 0; stockCode < length; stockCode++) {
-          const currentStockName =
-            CONVERT_STOCKS.TO_STR[stockCode as StocksEnum];
+        const input = [...transformDate(formatedDate), stockCode, slope];
+        const inputTensor = tf.tensor2d([input], [1, 5]);
 
-          const input = [...transformDate(formatedDate), stockCode, slope];
-          const inputTensor = tf.tensor2d([input], [1, 5]);
+        const prediction = model.predict(inputTensor) as tf.Tensor;
+        const predictionValue = prediction.dataSync()[0];
 
-          const prediction = model.predict(inputTensor) as tf.Tensor;
-          const predictionValue = prediction.dataSync()[0];
+        const stocksPrices = predictionsByStockName.get(currentStockName) ?? [];
 
-          const stocksPrices = predictionsMap.get(currentStockName) ?? [];
-
-          predictionsMap.set(currentStockName, [
-            ...stocksPrices,
-            predictionValue,
-          ]);
-        }
+        predictionsByStockName.set(currentStockName, [
+          ...stocksPrices,
+          predictionValue,
+        ]);
       }
     });
 
-    for (const [name, predictionPrices] of predictionsMap.entries()) {
+    for (const [name, predictionPrices] of predictionsByStockName.entries()) {
       let max = 0;
       predictionPrices.forEach(el => {
         if (el > max && el !== predictionPrices[0]) {
@@ -144,13 +141,10 @@ export class Store implements IStore {
       });
       const profit = (max / predictionPrices[0] - 1) * 100;
 
-      this.predictionOnStocks.map((predictionOnStock, index) => {
-        if (predictionOnStock.name === name) {
-          this.predictionOnStocks[index] = {
-            ...this.predictionOnStocks[index],
-            profit,
-          };
-        }
+      this.predictionOnStocks.push({
+        mae: this.maeByStockName[name] ?? 0,
+        name: name as StockNames,
+        profit,
       });
     }
 
@@ -291,10 +285,10 @@ export class Store implements IStore {
     this.predictionOnStocks = [];
     this.predictionsIsReady = false;
 
-    maes.map((mae, nameCode: StocksEnum) => {
+    maes.forEach((mae, nameCode: StocksEnum) => {
       const stockName = CONVERT_STOCKS.TO_STR[nameCode];
 
-      this.predictionOnStocks.push({ mae, name: stockName, profit: 0 });
+      this.maeByStockName = { ...this.maeByStockName, [stockName]: mae };
     });
   };
 }

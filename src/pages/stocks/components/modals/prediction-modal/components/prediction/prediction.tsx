@@ -14,6 +14,7 @@ import useStore from '../../../../../../../hooks/use-store';
 import Alert from '../../../../../../../components/alert/alert';
 import { convertPeriodType } from '../../../../../../../utils/period';
 import { DATE_FORMAT } from '../../../../../../../store/store.constant';
+import { getMaes } from '../../../../../../../utils/train-model';
 
 const Prediction = () => {
   const { store } = useStore();
@@ -25,16 +26,16 @@ const Prediction = () => {
   const alertTitle = `акции c ${startDate} по ${endDate}`;
 
   const handleGetPredictions = async () => {
-    setLoading(true);
-    const data = localStorage.getItem('maes');
-
-    if (!data) return;
-    const parsedData = JSON.parse(data);
-
-    if (parsedData) {
-      store.setMaesOnStocks(parsedData);
-      await store.getPrediction();
+    if (!store.model) {
+      return;
     }
+    setLoading(true);
+
+    await store.getStocks();
+    const maeByStockCode = await getMaes(store.stocks, store.model);
+    store.setMaesOnStocks(maeByStockCode);
+
+    await store.getPrediction();
     setLoading(false);
   };
 

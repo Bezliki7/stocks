@@ -133,12 +133,12 @@ const getDataForTraining = async (data: Stocks[]) => {
   return { inputs, output };
 };
 
-const getMaes = async (
+export const getMaes = async (
   data: Stocks[],
   model: tf.Sequential | tf.LayersModel,
 ) => {
-  const testData = data.slice(Math.round(data.length * 0.7), data.length);
-  const trainingData = await getDataForTraining(testData);
+  const dataForTest = data.slice(Math.round(data.length * 0.7), data.length);
+  const trainingData = await getDataForTraining(dataForTest);
 
   const predictionsOnTest = trainingData.inputs.map(input => {
     const inputTensor = tf.tensor2d([input], [1, 5]);
@@ -149,7 +149,7 @@ const getMaes = async (
   });
 
   const absoluteDiff = new Map<number, number[]>();
-  for (let i = 0; i < testData.length; i++) {
+  for (let i = 0; i < dataForTest.length; i++) {
     const prev = absoluteDiff.get(predictionsOnTest[i].nameCode) ?? [];
 
     absoluteDiff.set(predictionsOnTest[i].nameCode, [
