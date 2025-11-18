@@ -80,57 +80,50 @@ export const trainModel = async (
 };
 
 const getDataForTraining = async (data: Stocks[]) => {
-  let counter = 0;
-  let slope = 0;
-  const countRestart = 80;
+	// Наклон тренда (slope) пересчитывается каждые countRestart элементов
+	let slope = 0;
+	const countRestart = 80;
 
-  const apiClient = new ApiClient();
-  const moexIndexes = await apiClient.prediction.getMoexIndexesByPeriod({
-    startDate: new Date('2016-01-01'),
-    endDate: new Date(),
-  });
+	const apiClient = new ApiClient();
+	const moexIndexesData = await apiClient.prediction.getMoexIndexesByPeriod({
+		startDate: new Date('2016-01-01'),
+		endDate: new Date(),
+	});
 
-  const normalizedData = await Promise.all(
-    data.map(async (info, index) => {
-      if (counter === countRestart) {
-        counter = 0;
-      }
+	const inputs: [
+		year: number,
+		month: number,
+		day: number,
+		nameCode: number,
+		slope: number,
+	][] = [];
+	const output: number[] = [];
 
-      if (counter === 0) {
-        const startDate = info.date;
-        const endDate =
-          data[index + countRestart]?.date ?? data[data.length - 1].date;
-        const moexes = moexIndexes.data.filter(moex => {
-          if (moex.date >= startDate && moex.date <= endDate) {
-            return true;
-          }
-          return false;
-        });
+	for (const [index, info] of data.entries()) {
+		// Обновление наклона тренда каждые countRestart элементов
+		if (index % countRestart === 0) {
+			const startDate = info.date;
+			const endDate =
+				data[index + countRestart]?.date ?? data[data.length - 1].date;
 
-        const indexes = moexes.map(el => +el.index);
-        const linearRegression = fitLinearRegression(indexes);
+			const moexIndexes: number[] = [];
+			for (const moex of moexIndexesData) {
+				if (moex.date >= startDate && moex.date <= endDate) {
+					moexIndexes.push(+moex.index);
+				}
+			}
 
-        slope = linearRegression.slope ? linearRegression.slope : slope;
-      }
+			const linearRegression = fitLinearRegression(moexIndexes);
 
-      counter++;
-      return {
-        date: +format(info.date, 'yyMMdd'),
-        price: +info.index,
-        nameCode: CONVERT_STOCKS.TO_ENUM[info.name as StockNames],
-        slope: Math.round(slope),
-      };
-    }),
-  );
+			slope = linearRegression.slope ?? slope;
+		}
 
-  const inputs = normalizedData.map(item => [
-    ...transformDate(item!.date),
-    item.nameCode,
-    item.slope,
-  ]);
-  const output = normalizedData.map(item => item!.price);
+		const parsedDateNumbers = transformDate(info.date);
+		inputs.push([...parsedDateNumbers, info.nameCode, slope]);
+		output.push(info.price);
+	}
 
-  return { inputs, output };
+	return { inputs, output };
 };
 
 export const getMaes = async (
