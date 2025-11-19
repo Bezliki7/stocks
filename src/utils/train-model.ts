@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { format } from 'date-fns';
+import { getDate, getMonth, getYear } from 'date-fns';
 
 import { CONVERT_STOCKS } from '../pages/stocks/index.constant';
 import { URLS, BASE_URL } from '../api/requests/requests.constant';
@@ -65,7 +65,7 @@ export const trainModel = async (
       batchSize: 32,
       callbacks: [
         {
-          onEpochEnd(epoch: number, logs: any) {
+          onEpochEnd(epoch: number, logs: unknown) {
             console.log(epoch, logs);
           },
         },
@@ -80,50 +80,54 @@ export const trainModel = async (
 };
 
 const getDataForTraining = async (data: Stocks[]) => {
-	// Наклон тренда (slope) пересчитывается каждые countRestart элементов
-	let slope = 0;
-	const countRestart = 80;
+  // Наклон тренда (slope) пересчитывается каждые countRestart элементов
+  let slope = 0;
+  const countRestart = 80;
 
-	const apiClient = new ApiClient();
-	const moexIndexesData = await apiClient.prediction.getMoexIndexesByPeriod({
-		startDate: new Date('2016-01-01'),
-		endDate: new Date(),
-	});
+  const apiClient = new ApiClient();
+  const moexIndexesData = await apiClient.prediction.getMoexIndexesByPeriod({
+    startDate: new Date('2016-01-01'),
+    endDate: new Date(),
+  });
 
-	const inputs: [
-		year: number,
-		month: number,
-		day: number,
-		nameCode: number,
-		slope: number,
-	][] = [];
-	const output: number[] = [];
+  const inputs: [
+    year: number,
+    month: number,
+    day: number,
+    nameCode: number,
+    slope: number,
+  ][] = [];
+  const output: number[] = [];
 
-	for (const [index, info] of data.entries()) {
-		// Обновление наклона тренда каждые countRestart элементов
-		if (index % countRestart === 0) {
-			const startDate = info.date;
-			const endDate =
-				data[index + countRestart]?.date ?? data[data.length - 1].date;
+  for (const [index, info] of data.entries()) {
+    // Обновление наклона тренда каждые countRestart элементов
+    if (index % countRestart === 0) {
+      const startDate = info.date;
+      const endDate =
+        data[index + countRestart]?.date ?? data[data.length - 1].date;
 
-			const moexIndexes: number[] = [];
-			for (const moex of moexIndexesData) {
-				if (moex.date >= startDate && moex.date <= endDate) {
-					moexIndexes.push(+moex.index);
-				}
-			}
+      const moexIndexes: number[] = [];
+      for (const moex of moexIndexesData.data) {
+        if (moex.date >= startDate && moex.date <= endDate) {
+          moexIndexes.push(+moex.index);
+        }
+      }
 
-			const linearRegression = fitLinearRegression(moexIndexes);
+      const linearRegression = fitLinearRegression(moexIndexes);
 
-			slope = linearRegression.slope ?? slope;
-		}
+      slope = Math.round(linearRegression.slope) ?? slope;
+    }
 
-		const parsedDateNumbers = transformDate(info.date);
-		inputs.push([...parsedDateNumbers, info.nameCode, slope]);
-		output.push(info.price);
-	}
+    const parsedDateNumbers = transformDate(info.date.valueOf());
+    inputs.push([
+      ...parsedDateNumbers,
+      CONVERT_STOCKS.TO_ENUM[info.name as StockNames],
+      slope,
+    ]);
+    output.push(+info.index);
+  }
 
-	return { inputs, output };
+  return { inputs, output };
 };
 
 export const getMaes = async (
@@ -160,9 +164,11 @@ export const getMaes = async (
   return maes;
 };
 
-export function transformDate(date: number) {
-  const year = Math.floor(date / 10000);
-  const month = Math.floor((date % 10000) / 100);
-  const day = date % 100;
+export function transformDate(
+  date: number,
+): [year: number, month: number, day: number] {
+  const year = getYear(date) % 100;
+  const month = getMonth(date) + 1;
+  const day = getDate(date);
   return [year, month, day];
 }

@@ -1,6 +1,6 @@
 import { flow, makeAutoObservable } from 'mobx';
 import * as tf from '@tensorflow/tfjs';
-import { eachDayOfInterval, format, parse, subYears } from 'date-fns';
+import { eachDayOfInterval, parse, subYears } from 'date-fns';
 
 import { BASE_URL, URLS } from '../api/requests/requests.constant';
 import { PERIOD_TYPE } from '../pages/stocks/components/modals/prediction-modal/components/period/period.constant';
@@ -108,16 +108,14 @@ export class Store implements IStore {
     const days = eachDayOfInterval({ start: new Date(), end: endDate });
     const predictionsByStockName = new Map<string, number[]>();
     const indexes = this.moexIndexes.map(el => +el.index);
-    const { slope } = fitLinearRegression(indexes);
+    const slope = Math.round(fitLinearRegression(indexes).slope);
     const model = await this.getModel();
 
     days.forEach(day => {
-      const formatedDate = +format(day, 'yyMMdd');
-
       for (let stockCode = 0; stockCode < STOCKS_TYPE_COUNT; stockCode++) {
         const currentStockName = CONVERT_STOCKS.TO_STR[stockCode as StocksEnum];
 
-        const input = [...transformDate(formatedDate), stockCode, slope];
+        const input = [...transformDate(day.valueOf()), stockCode, slope];
         const inputTensor = tf.tensor2d([input], [1, 5]);
 
         const prediction = model.predict(inputTensor) as tf.Tensor;

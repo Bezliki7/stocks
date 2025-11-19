@@ -1,3 +1,6 @@
+/**
+ * Вычисление коэффициента наклона (slope) линейной регрессии
+ */
 export function fitLinearRegression(data: number[]) {
   const n = data.length;
 
@@ -19,6 +22,9 @@ export function fitLinearRegression(data: number[]) {
   return { slope: a };
 }
 
+/**
+ * Определение типа тренда
+ */
 export const determineTrendType = (data: number[]) => {
   const linearRegression = fitLinearRegression(data);
 
