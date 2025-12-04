@@ -1,30 +1,55 @@
-# React + TypeScript + Vite
+## Установка
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+```bash
+$ npm install
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Запуск приложения
+
+```bash
+$ npm run dev
+```
+
+## Информация о проекте
+
+Инвестиционный портфель формируется с возможностью настройки параметров, на основе которых осуществляется предсказание цен на акции.
+
+Параметры для настройки:
+
+- **Наклон тренда** — определяется по графику, позволяет учитывать текущую динамику актива.
+- **Опция риска** — акции будут сортироваться по доходу, а не по погрешности.
+- **Срок владения** — выбор периода инвестирования:
+  - Краткосрочный (1 месяц)
+  - Среднесрочный (6 месяцев)
+  - Долгосрочный (1 год)
+
+Путь к файлу с настройкой параметров: `src\pages\stocks\components\modals\prediction-modal\prediction-modal.tsx`.
+
+Модель запрашивается с сервера, можно переобучить в модальном окне с моделью, скачать ее и загрузить на сервер.
+
+### Обучение модели (функция `trainModel`)
+
+Обучение модели осуществляется с использованием библиотеки TensorFlow.js. Процесс включает в себя:
+
+1. Загрузка предварительно обученной модели с сервера.
+2. Если сохраненная модель отсутствует, формируется обучающая выборка из поступивших данных (перед обучением запрашиваются акции). Для обучения используется 70% данных.
+3. **Подготовка данных**: Функция `getDataForTraining` преобразует данные, сформированные на основе годовых, месячных, дневных показателей, кода акции и наклона тренда, в формат входных параметров. Выходные параметры - это цены акций.
+4. **Архитектура модели**: Создается последовательная нейронная сеть (`tf.sequential`) со следующими слоями:
+   - Входной плотный слой с 128 нейронами.
+   - Второй плотный слой с 64 нейронами.
+   - Слой отсева.
+   - Третий плотный слой с 32 нейронами.
+   - Выходной плотный слой с 1 нейроном.
+5. **Обучение**: Модель обучается в течение 500 эпох.
+
+### Оценка точности (функция `getMaes`)
+
+Функция `getMaes` выполняет оценку точности обученной модели на тестовой выборке:
+
+1. **Формирование тестовой выборки**: Берется 30% данных, оставшихся после формирования обучающей выборки (с 70% по 100%).
+2. **Подготовка тестовых данных**: Тестовые данные преобразуются с помощью `getDataForTraining`.
+3. **Предсказания модели**: Для каждого элемента тестовой выборки и получается предсказанние значение цены.
+4. **Расчет абсолютных ошибок**: Для каждой акции вычисляется абсолютная разница между предсказанным и фактическим значением.
+5. **Группировка и усреднение**: Ошибки группируются по коду акции, и для каждой группы вычисляется среднее значение абсолютной ошибки (MAE).
+
+В функции `countMeasureOfError` реализована 1 из 4 формул предпочитаемых для расчета средней абсолютной ошибки, однако она еще не внедрена в систему.
